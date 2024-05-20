@@ -1,11 +1,22 @@
 const express = require('express');
 const router = express.Router();
-const animalController = require('../controllers/animalController');
+const Animal = require('../models/animal');
 
-router.post('/', animalController.createAnimal);
-router.get('/', animalController.getAllAnimals);
-router.put('/:id', animalController.updateAnimal);
-router.delete('/:id', animalController.deleteAnimal);
-router.get('/search', animalController.searchAnimals);
+router.get('/', async (req, res) => {
+    try {
+        const { type, name } = req.query;
+        let query = {};
+        if (type) {
+            query.type = type;
+        }
+        if (name) {
+            query.name = { $regex: name, $options: 'i' };
+        }
+        const animals = await Animal.find(query);
+        res.json(animals);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
 
 module.exports = router;
